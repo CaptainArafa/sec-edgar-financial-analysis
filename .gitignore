@@ -1,0 +1,8 @@
+# Ignore raw SEC text data files
+data/
+*.txt
+
+# Ignore Python cache and environment files
+__pycache__/
+*.pyc
+.env
