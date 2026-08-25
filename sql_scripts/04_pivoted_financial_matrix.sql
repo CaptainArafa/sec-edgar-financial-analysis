@@ -1,9 +1,10 @@
 /*
  * File:           sql_scripts/04_pivoted_financial_matrix.sql
- * Object:         Pivoted Financial Statement Matrix
- * Description:    Transforms vertical XBRL tag key-value pairs into a standardized 
- *                 horizontal financial statement table for Apple and Microsoft.
+ * Object:         vw_pivoted_financial_matrix (Database View)
+ * Description:    Creates a persistent relational view transforming vertical XBRL 
+ *                 tags into a horizontal financial matrix for target entities.
  */
+CREATE OR REPLACE VIEW vw_pivoted_financial_matrix AS
 SELECT 
     s.name AS company_name,
     s.cik,
@@ -26,7 +27,4 @@ GROUP BY
     s.cik, 
     s.form, 
     s.fy, 
-    s.period
-ORDER BY 
-    s.name, 
-    s.period DESC;
+    s.period;
