@@ -1,8 +1,8 @@
 /*
  * File:           sql_scripts/04_pivoted_financial_matrix.sql
  * Object:         vw_pivoted_financial_matrix (Database View)
- * Description:    Creates a persistent relational view transforming vertical XBRL 
- *                 tags into a horizontal financial matrix for target entities.
+ * Description:    Pivots tall XBRL tag structures into a unified horizontal financial matrix 
+ *                 with expanded US-GAAP taxonomy tag aliases.
  */
 CREATE OR REPLACE VIEW vw_pivoted_financial_matrix AS
 SELECT 
@@ -11,17 +11,43 @@ SELECT
     s.form,
     s.fy,
     s.period,
-    MAX(CASE WHEN n.tag IN ('Revenues', 'RevenueFromContractWithCustomerExcludingAssessedTax') THEN n.value END) AS total_revenue,
-    MAX(CASE WHEN n.tag = 'NetIncomeLoss' THEN n.value END) AS net_income,
-    MAX(CASE WHEN n.tag = 'AssetsCurrent' THEN n.value END) AS current_assets,
-    MAX(CASE WHEN n.tag = 'LiabilitiesCurrent' THEN n.value END) AS current_liabilities,
-    MAX(CASE WHEN n.tag = 'Assets' THEN n.value END) AS total_assets,
-    MAX(CASE WHEN n.tag = 'Liabilities' THEN n.value END) AS total_liabilities,
-    MAX(CASE WHEN n.tag = 'StockholdersEquity' THEN n.value END) AS stockholders_equity
+    MAX(CASE WHEN n.tag IN (
+        'Revenues', 
+        'RevenueFromContractWithCustomerExcludingAssessedTax', 
+        'SalesRevenueNet', 
+        'RevenuesNetOfInterestExpense',
+        'FinancialServicesRevenue'
+    ) THEN n.value END) AS total_revenue,
+    
+    MAX(CASE WHEN n.tag IN (
+        'NetIncomeLoss', 
+        'ProfitLoss', 
+        'NetIncomeLossAvailableToCommonStockholdersBasic'
+    ) THEN n.value END) AS net_income,
+    
+    MAX(CASE WHEN n.tag IN (
+        'AssetsCurrent'
+    ) THEN n.value END) AS current_assets,
+    
+    MAX(CASE WHEN n.tag IN (
+        'LiabilitiesCurrent'
+    ) THEN n.value END) AS current_liabilities,
+    
+    MAX(CASE WHEN n.tag IN (
+        'Assets'
+    ) THEN n.value END) AS total_assets,
+    
+    MAX(CASE WHEN n.tag IN (
+        'Liabilities'
+    ) THEN n.value END) AS total_liabilities,
+    
+    MAX(CASE WHEN n.tag IN (
+        'StockholdersEquity', 
+        'StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest'
+    ) THEN n.value END) AS stockholders_equity
 FROM sub s
 INNER JOIN num n ON s.adsh = n.adsh
-WHERE s.cik IN ('320193', '789019')
-  AND s.form IN ('10-K', '10-Q')
+WHERE s.form IN ('10-K', '10-Q')
 GROUP BY 
     s.name, 
     s.cik, 

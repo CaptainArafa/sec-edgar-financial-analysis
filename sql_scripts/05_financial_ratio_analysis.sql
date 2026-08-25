@@ -1,8 +1,8 @@
 /*
  * File:           sql_scripts/05_financial_ratio_analysis.sql
  * Object:         Financial Ratio Analytics & Liquidity Assessment
- * Description:    Queries vw_pivoted_financial_matrix to calculate core liquidity, 
- *                 profitability, leverage, and solvency metrics for target entities.
+ * Description:    Calculates core financial ratios from vw_pivoted_financial_matrix 
+ *                 filtering for valid income statement entries.
  */
 SELECT 
     company_name,
@@ -22,4 +22,6 @@ SELECT
     ROUND(CAST(total_liabilities / NULLIF(stockholders_equity, 0) AS NUMERIC), 2) AS debt_to_equity_ratio,
     ROUND(CAST(total_liabilities / NULLIF(total_assets, 0) * 100 AS NUMERIC), 2) AS debt_ratio_pct
 FROM vw_pivoted_financial_matrix
-ORDER BY company_name, period DESC;
+WHERE total_revenue IS NOT NULL 
+  AND net_income IS NOT NULL
+ORDER BY total_revenue DESC;
